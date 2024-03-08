@@ -50,3 +50,27 @@ e.get_experiments_by_status(status="Ready for Export")
 e.export_experiment(64, format='pdf')  # exports to a pdf file in the current directory
 e.export_experiment(64, format='eln')  # export to ELN format archive (see https://github.com/TheELNConsortium/TheELNFileFormat/blob/master/SPECIFICATION.md)
 ```
+
+### Settings
+
+There are a couple settings you need to provide, which are the base URL for the API
+endpoint, and an API Key. These can either be provided as strings when you initialize an
+`ELabApi()` instance, or (better) can be provided by querying from the environment. I
+like to use the [`python-dotenv`](https://pypi.org/project/python-dotenv/) library to
+do this, which allows you to place a `.env` file in the current directory with values
+you want to be part of the environment, and then call:
+
+```python
+from dotenv import load_dotenv
+load_dotenv()
+```
+
+to make them available to your script via `os.environ.get()` (as used in the example
+above). This repo includes a `.env.example` file that you can rename to `.env` and use
+by replacing your API key. An API key for your ELab user can be generated at
+from the relevant tab in your "User control panel", accessible at:
+https://***REMOVED***/ucp.php?tab=4
+
+The `***REMOVED***` can be left as is. This value is used by the API library to
+validate HTTPS requests made by the library, since ***REMOVED*** uses the NIST internal
+SSL certificate.
