@@ -1,0 +1,9 @@
+.env
+.dev
+*.csv
+*.eln
+*.json
+*.pdf
+*.png
+*.zip
+__pycache__/
