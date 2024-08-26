@@ -45,9 +45,16 @@ class ELabApi:
     api_base_url: str
     """An ELabFTW API URL root (e.g. https://elabftw.net/api/v2/)"""
 
+    _experiment_cache: dict
+    _item_cache: dict
+    _user_cache: dict
+
     def __init__(self, api_base_url, api_key):
         self.api_key = api_key
         self.api_base_url = api_base_url
+        self._experiment_cache = {}
+        self._item_cache = {}
+        self._user_cache = {}
 
     def api_req(
         self,
@@ -192,10 +199,14 @@ class ELabApi:
         return exp 
     
     def get_experiment(self, experiment_id: int):
+        if experiment_id in self._experiment_cache:
+            logger.debug(f'Returning experiment "{experiment_id}" from the cache')
+            return self._experiment_cache[experiment_id]
         exp = self.api_req(
             'GET', 
             f'experiments/{experiment_id}'
         ).json()
+        self._experiment_cache[experiment_id] = exp
         return exp
     
     def export_experiment(
@@ -267,6 +278,28 @@ class ELabApi:
             f.write(r.content)
 
         return output_filename
+    
+    def get_user(self, user_id: int):
+        if user_id in self._user_cache:
+            logger.debug(f'Returning user "{user_id}" from the cache')
+            return self._user_cache[user_id]
+        user = self.api_req(
+            'GET', 
+            f'users/{user_id}'
+        ).json()
+        self._user_cache[user_id] = user
+        return user
+    
+    def get_item(self, item_id: int):
+        if item_id in self._item_cache:
+            logger.debug(f'Returning item "{item_id}" from the cache')
+            return self._item_cache[item_id]
+        item = self.api_req(
+            'GET', 
+            f'items/{item_id}'
+        ).json()
+        self._item_cache[item_id] = item
+        return item
 
 class TeamApi(ELabApi):
     """
