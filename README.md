@@ -1,6 +1,10 @@
 # ELabFTW Python API
 
-This repository holds a Python library that can be used to communicate with APIv2
+[![Static Badge](https://img.shields.io/badge/Documentation-blue?logo=readthedocs&logoColor=white&labelColor=gray)](https://***REMOVED******REMOVED***.nist.gov/elabftw-python-api)
+
+This repository 
+([https://***REMOVED***/gitlab/mml-lims/elabftw-python-api/](https://***REMOVED***/gitlab/mml-lims/elabftw-python-api/)) 
+contains a Python library that can be used to communicate with APIv2
 of [ELabFTW](https://elabftw.net) ([Github](https://github.com/elabftw/elabftw#readme)).
 It was written primarily by [Josh](https://nist.gov/people/joshua-taillon) to develop 
 scripts that interface with the NIST instance of ELabFTW available at
@@ -28,7 +32,9 @@ $ poetry install
 
 ## Usage
 
-Check the documentation strings, but in general, usage works as follows:
+Check the documentation strings or the dedicated documentation page
+([https://***REMOVED******REMOVED***.nist.gov/elabftw-python-api](https://***REMOVED******REMOVED***.nist.gov/elabftw-python-api)), 
+but in general usage works as follows:
 
 ```python
 # import the library:
