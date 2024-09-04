@@ -26,3 +26,16 @@ pydata-sphinx-theme = "^0.15.4"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+profile = "black"
+src_paths = ["elabapi"]
+
+[tool.ruff.lint]
+ignore = ["N999", "UP006", "UP007", "UP035", "B905", "RUF007"]
+
+[tool.ruff.lint.per-file-ignores]
+"docs/*" = ["S"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
