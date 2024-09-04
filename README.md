@@ -1,6 +1,7 @@
 # ELabFTW Python API
 
-[![Static Badge](https://img.shields.io/badge/Documentation-blue?logo=readthedocs&logoColor=white&labelColor=gray)](https://***REMOVED******REMOVED***.nist.gov/elabftw-python-api)
+[![Static Badge](https://img.shields.io/badge/Documentation-blue?logo=readthedocs&logoColor=white&labelColor=gray)](https://***REMOVED******REMOVED***.nist.gov/elabftw-python-api) [![Static Badge](https://img.shields.io/badge/repository_link-red?logo=gitlab&logoColor=white&labelColor=grey)](https://***REMOVED***/gitlab/mml-lims/elabftw-python-api/)
+
 
 This repository 
 ([https://***REMOVED***/gitlab/mml-lims/elabftw-python-api/](https://***REMOVED***/gitlab/mml-lims/elabftw-python-api/)) 
@@ -8,7 +9,10 @@ contains a Python library that can be used to communicate with APIv2
 of [ELabFTW](https://elabftw.net) ([Github](https://github.com/elabftw/elabftw#readme)).
 It was written primarily by [Josh](https://nist.gov/people/joshua-taillon) to develop 
 scripts that interface with the NIST instance of ELabFTW available at
-https://***REMOVED***.
+[https://***REMOVED***](https://***REMOVED***).
+
+For more details about the use of ELabFTW at NIST/MML, please see this page:
+[https://***REMOVED******REMOVED***.nist.gov/elabftw/](https://***REMOVED******REMOVED***.nist.gov/elabftw/).
 
 *Note:* there is an official Python API library available from 
 [https://github.com/elabftw/elabapi-python/](https://github.com/elabftw/elabapi-python/),
