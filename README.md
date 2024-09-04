@@ -7,10 +7,10 @@ scripts that interface with the NIST instance of ELabFTW available at
 https://***REMOVED***.
 
 *Note:* there is an official Python API library available from 
-https://github.com/elabftw/elabapi-python/, but I found it a bit cumbersome to use,
-as it requires quite a bit of boilerplate code for simple tasks. The goal of *this*
-library is to provide a simple interface for common tasks such as exporting experiments,
-changing status, etc.
+[https://github.com/elabftw/elabapi-python/](https://github.com/elabftw/elabapi-python/),
+but I found it a bit cumbersome to use, as it requires quite a bit of boilerplate code
+for simple tasks. The goal of *this* library is to provide a simple interface for common
+tasks such as exporting experiments, changing status, etc.
 
 ## Installation
 
@@ -69,7 +69,7 @@ to make them available to your script via `os.environ.get()` (as used in the exa
 above). This repo includes a `.env.example` file that you can rename to `.env` and use
 by replacing your API key. An API key for your ELab user can be generated at
 from the relevant tab in your "User control panel", accessible at:
-https://***REMOVED***/ucp.php?tab=4
+[https://***REMOVED***/ucp.php?tab=4](https://***REMOVED***/ucp.php?tab=4)
 
 The `***REMOVED***` can be left as is. This value is used by the API library to
 validate HTTPS requests made by the library, since ***REMOVED*** uses the NIST internal

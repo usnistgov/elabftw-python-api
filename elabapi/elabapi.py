@@ -43,7 +43,7 @@ class ELabApi:
     """An ELabFTW API key"""
 
     api_base_url: str
-    """An ELabFTW API URL root (e.g. https://elabftw.net/api/v2/)"""
+    """An ELabFTW API URL root (e.g. ``https://elabftw.net/api/v2/``)"""
 
     _experiment_cache: dict
     _item_cache: dict
@@ -60,8 +60,10 @@ class ELabApi:
         self,
         function: str,
         endpoint: str,
+        limit: Optional[int | Literal['all']] = None,
+        offset: Optional[int] = None,
         **kwargs: Optional[dict],
-    ):
+    ) -> list[dict]:
         """
         Make a request to the ELabFTW API.
 
@@ -73,17 +75,28 @@ class ELabApi:
         Parameters
         ----------
         function
-            The function from the ``requests`` library to use (e.g.
-            ``'GET'``, ``'POST'``, ``'PATCH'``, etc.)
+            The function from the ``requests`` library to use (e.g. ``'GET'``, 
+            ``'POST'``, ``'PATCH'``, etc.)
         endpoint
-            The API endpoint to fetch (will be appended to ``ELAB_URL`` environment variable)
+            The API endpoint to fetch (will be appended to ``ELAB_URL`` environment
+            variable)
+        limit
+            The number of records to return from the API request. If ``'all'`` (the 
+            default for `'GET'` requests), the API call will be repeated until no more
+            records are found
+        offset
+            Used together with ``limit``, this is the pagination offset value to send to
+            the API. Note, for both ``limit`` and ``offset``, any value provided as an
+            argument to this function will override any value provided via URL
+            parameters in the ``params`` `kwarg`. Any value for ``offset`` will be
+            ignored if ``limit`` is ``'all'``.
         **kwargs :
             Other keyword arguments are passed along to the ``fn``
 
         Returns
         -------
-        r : :py:class:`requests.Response`
-            A requests response object
+        r 
+            A list of dictionaries, one for each JSON object returned by the API 
 
         Raises
         ------
@@ -106,6 +119,18 @@ class ELabApi:
             kwargs['headers'] = {
                 'Authorization': self.api_key
             }
+
+        # handle pagination arguments
+        if 'params' not in kwargs:
+            kwargs['params'] = {}
+        if offset:
+            kwargs['params']['offset'] = offset
+        if limit and isinstance(limit, int):
+            kwargs['params']['limit'] = limit
+        
+        # handle default case for limit
+        if limit is None and function.lower() == 'get':
+            limit = 'all'
 
         # remove leading slash from endpoint, because it's never what you want
         if endpoint[0] == '/':
@@ -130,23 +155,54 @@ class ELabApi:
             else: 
                 kwargs_to_log = kwargs
             logger.debug(f"{function} -- {url}\n{kwargs_to_log}")
-            response = s.request(
-                function,
-                url,
-                verify=verify_arg,
-                **kwargs,
-            )
+            if limit == 'all':
+                # handle looping for getting all results from the api
+                results = []
+                _limit = 50
+                num_results = 50
+                _offset = 0
+                logger.debug("Fetching 'all' results via pagination")
+                # we want to terminate if num_results is less than the limit
+                while num_results >= _limit:
+                    kwargs['params']['limit'] = _limit
+                    kwargs['params']['offset'] = _offset
+                    logger.debug(f"{function} -- {url} -- "
+                                 f"limit: {_limit}, offset: {_offset}")
+                    response = s.request(
+                        function,
+                        url,
+                        verify=verify_arg,
+                        **kwargs,
+                    ).json()
+                    if isinstance(response, dict):
+                        # if the response is a dict, there was just one object returned,
+                        # so wrap it as a list to be consistent with other behavior
+                        num_results = 1
+                        results = [response]
+                    else:
+                        num_results = len(response)
+                        results += response
+                        _offset += _limit
 
-        return response
+            else:
+                results = s.request(
+                    function,
+                    url,
+                    verify=verify_arg,
+                    **kwargs,
+                ).json()
+
+        logger.debug(f"Returning {len(results)} results")
+        return results
 
     def get_api_keys(self):
-        return self.api_req('GET', 'apikeys').json()
+        return self.api_req('GET', 'apikeys')
     
     def get_config(self):
-        return self.api_req('GET', 'config').json()
+        return self.api_req('GET', 'config')
     
     def get_experiments(self) -> list[Dict]:
-        exp = self.api_req('GET', 'experiments').json()
+        exp = self.api_req('GET', 'experiments')
         return exp 
 
     def get_experiments_by_status(self, status: str) -> list[Dict]:
@@ -154,15 +210,28 @@ class ELabApi:
             'GET', 
             'experiments', 
             params={'q': f'status:"{status}"'}
-        ).json()
+        )
         return exp 
 
-    def get_experiments_by_category(self, category: str) -> list[Dict]:
+    def get_experiments_by_category(self, category: str, **kwargs) -> list[Dict]:
+        """
+        Get experiments matching a given category
+        
+        Parameters
+        ----------
+        category
+            The text of the category to search. Note, the ELabFTW search syntax is case
+            insensitive
+
+        *kwargs*
+            Additional keyword arguments are passed to :py:func:`api_req`
+        """
         exp = self.api_req(
             'GET', 
             'experiments', 
-            params={'q': f'category:"{category}"'}
-        ).json()
+            params={'q': f'category:"{category}"'},
+            **kwargs
+        )
         return exp 
     
     def set_experiment_category(
@@ -181,7 +250,7 @@ class ELabApi:
             # get categories for the current team and find the one that matches name
             cats = self.api_req(
                 'GET', "teams/current/experiments_categories"
-            ).json()
+            )
             titles = [t['title'] for t in cats]
             if category_name in titles:
                 category_id = [t for t in cats if t['title'] == category_name][0]['id']
@@ -202,10 +271,11 @@ class ELabApi:
         if experiment_id in self._experiment_cache:
             logger.debug(f'Returning experiment "{experiment_id}" from the cache')
             return self._experiment_cache[experiment_id]
+        # api_req returns a list, so take the sole item in this case
         exp = self.api_req(
             'GET', 
             f'experiments/{experiment_id}'
-        ).json()
+        )[0]
         self._experiment_cache[experiment_id] = exp
         return exp
     
@@ -283,10 +353,11 @@ class ELabApi:
         if user_id in self._user_cache:
             logger.debug(f'Returning user "{user_id}" from the cache')
             return self._user_cache[user_id]
+        # api_req returns a list, so take the sole item in this case
         user = self.api_req(
             'GET', 
             f'users/{user_id}'
-        ).json()
+        )[0]
         self._user_cache[user_id] = user
         return user
     
@@ -294,10 +365,11 @@ class ELabApi:
         if item_id in self._item_cache:
             logger.debug(f'Returning item "{item_id}" from the cache')
             return self._item_cache[item_id]
+        # api_req returns a list, so take the sole item in this case
         item = self.api_req(
             'GET', 
             f'items/{item_id}'
-        ).json()
+        )[0]
         self._item_cache[item_id] = item
         return item
 
@@ -331,7 +403,7 @@ class TeamApi(ELabApi):
     ):
         super().__init__(api_base_url, api_key)
         self.team_id = team_id
-        self.team = self.api_req('GET', f'teams/{self.team_id}').json()
+        self.team = self.api_req('GET', f'teams/{self.team_id}')
         if self.team_id == 'current':
             self.team_id = self.team['id']
         TeamApi.known_teams[self.team_id] = self.team
@@ -342,7 +414,7 @@ class TeamApi(ELabApi):
         
         https://doc.elabftw.net/api/v2/#/Teams/read-teams
         """
-        teams = self.api_req('GET', 'teams').json()
+        teams = self.api_req('GET', 'teams')
         for t in teams:
             TeamApi.known_teams[t['id']] = t
         logger.debug(f"teams: {teams}")
@@ -376,7 +448,7 @@ class TeamApi(ELabApi):
         #     logger.debug(f'Returning team "{id}" from local cache')
         #     return self.teams[id]
         # else:
-        team = self.api_req('GET', f'teams/{id}').json()
+        team = self.api_req('GET', f'teams/{id}')
         # self.teams[id] = team
         logger.debug(f"team: {team}")
         return team
@@ -387,7 +459,7 @@ class TeamApi(ELabApi):
 
         https://doc.elabftw.net/api/v2/#/Team%20tags/read-team_tags
         """
-        tags = self.api_req('GET', 'team_tags').json()
+        tags = self.api_req('GET', 'team_tags')
         logger.debug(f"tags: {tags}")
         return tags
     
@@ -397,7 +469,7 @@ class TeamApi(ELabApi):
         
         https://doc.elabftw.net/api/v2/#/Team%20tags/read-team_tag
         """
-        tag = self.api_req('GET', f'team_tags/{id}').json()
+        tag = self.api_req('GET', f'team_tags/{id}')
         if 'code' in tag and tag['code'] == 404:
             tag = None
         logger.debug(f"tag: {tag}")
@@ -409,7 +481,7 @@ class TeamApi(ELabApi):
         
         https://doc.elabftw.net/api/v2/#/Experiments%20categories/read-team-experiments-categories
         """
-        cats = self.api_req('GET', f"teams/{self.team_id}/experiments_categories").json()
+        cats = self.api_req('GET', f"teams/{self.team_id}/experiments_categories")
         logger.debug(f"categories: {cats}")
         return cats
     
@@ -422,7 +494,7 @@ class TeamApi(ELabApi):
         cat = self.api_req(
             'GET',
             f"teams/{self.team_id}/experiments_categories/{cat_id}"
-        ).json()
+        )
         if 'code' in cat and cat['code'] == 404:
             cat = None
         logger.debug(f"category: {cat}")
@@ -437,7 +509,7 @@ class TeamApi(ELabApi):
         cats = self.api_req(
             'GET', 
             f"teams/{self.team_id}/experiments_categories"
-        ).json()
+        )
         
         logger.debug(f"category: {cats}")
         return cats
@@ -448,7 +520,7 @@ class TeamApi(ELabApi):
         
         https://doc.elabftw.net/api/v2/#/Experiments%20status/read-team-experiments-status
         """
-        stats = self.api_req('GET', f"teams/{self.team_id}/experiments_status").json()
+        stats = self.api_req('GET', f"teams/{self.team_id}/experiments_status")
         logger.debug(f"statuses: {stats}")
         return stats
     
@@ -461,7 +533,7 @@ class TeamApi(ELabApi):
         stat = self.api_req(
             'GET',
             f"teams/{self.team_id}/experiments_status/{status_id}"
-        ).json()
+        )
         if 'code' in stat and stat['code'] == 404:
             stat = None
         logger.debug(f"status: {stat}")
@@ -485,7 +557,7 @@ class TeamApi(ELabApi):
         
         https://doc.elabftw.net/api/v2/#/Resources%20status/read-team-items-status
         """
-        stats = self.api_req('GET', f"teams/{self.team_id}/items_status").json()
+        stats = self.api_req('GET', f"teams/{self.team_id}/items_status")
         logger.debug(f"statuses: {stats}")
         return stats
 
@@ -498,7 +570,7 @@ class TeamApi(ELabApi):
         stat = self.api_req(
             'GET',
             f"teams/{self.team_id}/items_status/{status_id}"
-        ).json()
+        )
         if 'code' in stat and stat['code'] == 404:
             stat = None
         logger.debug(f"status: {stat}")
