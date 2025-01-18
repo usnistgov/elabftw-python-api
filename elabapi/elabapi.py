@@ -199,12 +199,29 @@ class ELabApi:
     def get_config(self):
         return self.api_req("GET", "config")
 
+    def _add_sharelinks(self, experiments: list[Dict]) -> list[Dict]:
+        """
+        Add a ``sharelink`` field to each experiment in a list of them.
+        
+        This is the web-accessible URL for the experiment, which is fetched when getting
+        an individual experiment, but not when getting a list of experiments (see
+        https://github.com/elabftw/elabftw/issues/4840 for details).
+        """
+        for e in experiments:
+            e["sharelink"] = urljoin(
+                self.api_base_url,
+                f"/experiments.php?mode=view&id={e['id']}"
+            )
+        return experiments
+
     def get_experiments(self) -> list[Dict]:
         exp = self.api_req("GET", "experiments")
+        exp = self._add_sharelinks(exp)
         return exp
 
     def get_experiments_by_status(self, status: str) -> list[Dict]:
         exp = self.api_req("GET", "experiments", params={"q": f'status:"{status}"'})
+        exp = self._add_sharelinks(exp)
         return exp
 
     def get_experiments_by_category(self, category: str, **kwargs) -> list[Dict]:
@@ -223,6 +240,7 @@ class ELabApi:
         exp = self.api_req(
             "GET", "experiments", params={"q": f'category:"{category}"'}, **kwargs
         )
+        exp = self._add_sharelinks(exp)
         return exp
 
     def set_experiment_category(
