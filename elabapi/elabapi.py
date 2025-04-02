@@ -376,6 +376,20 @@ class ELabApi:
         item = self.api_req("GET", f"items/{item_id}")[0]
         self._item_cache[item_id] = item
         return item
+    
+    def get_item_by_elabid(self, elabid: str) -> dict[str, str] | None:
+        if elabid in self._item_cache:
+            logger.debug(f'Returning item "{elabid}" from the cache')
+            return self._item_cache[elabid]
+        # api_req returns a list, so take the sole item in this case
+        querystring = {"q": f"elabid:{elabid}"}
+        res = self.api_req("GET", "items", params=querystring)
+        if res:
+            item = res[0]
+            self._item_cache[elabid] = item
+            return item
+        else:
+            return None
 
 
 class TeamApi(ELabApi):
