@@ -19,7 +19,7 @@ dotenv.load_dotenv()
 c = Console()
 
 # load certificate bundle into list of bytes
-CA_BUNDLE_CONTENT = os.environ.get("***REMOVED***", None)
+CA_BUNDLE_CONTENT = os.environ.get("CERT_BUNDLE", None)
 if CA_BUNDLE_CONTENT:
     CA_BUNDLE_CONTENT = [(i + "\n").encode() for i in CA_BUNDLE_CONTENT.split(r"\n")]
 

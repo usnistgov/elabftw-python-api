@@ -1,35 +1,31 @@
 # ELabFTW Python API
 
-[![Static Badge](https://img.shields.io/badge/Documentation-blue?logo=readthedocs&logoColor=white&labelColor=gray)](https://***REMOVED******REMOVED***.nist.gov/elabftw-python-api) [![Static Badge](https://img.shields.io/badge/repository_link-red?logo=gitlab&logoColor=white&labelColor=grey)](https://***REMOVED***/gitlab/mml-lims/elabftw-python-api/)
+[![Static Badge](https://img.shields.io/badge/Documentation-blue?logo=readthedocs&logoColor=white&labelColor=gray)](https://pages.nist.gov/elabftw-python-api) [![Static Badge](https://img.shields.io/badge/repository_link-red?logo=gitlab&logoColor=white&labelColor=grey)](https://github.com/usnistgov/elabftw-python-api/)
 
 
 This repository 
-([https://***REMOVED***/gitlab/mml-lims/elabftw-python-api/](https://***REMOVED***/gitlab/mml-lims/elabftw-python-api/)) 
+([https://github.com/usnistgov/elabftw-python-api/](https://github.com/usnistgov/elabftw-python-api/)) 
 contains a Python library that can be used to communicate with APIv2
 of [ELabFTW](https://elabftw.net) ([Github](https://github.com/elabftw/elabftw#readme)).
-It was written primarily by [Josh](https://nist.gov/people/joshua-taillon) to develop 
-scripts that interface with the NIST instance of ELabFTW available at
-[https://***REMOVED***](https://***REMOVED***).
-
-For more details about the use of ELabFTW at NIST/MML, please see this page:
-[https://***REMOVED******REMOVED***.nist.gov/elabftw/](https://***REMOVED******REMOVED***.nist.gov/elabftw/).
+It was written primarily by [Josh Taillon](https://nist.gov/people/joshua-taillon) to develop 
+scripts that interface with the NIST instance of ELabFTW.
 
 *Note:* there is an official Python API library available from 
 [https://github.com/elabftw/elabapi-python/](https://github.com/elabftw/elabapi-python/),
-but I found it a bit cumbersome to use, as it requires quite a bit of boilerplate code
+which works perfectly well, but requires quite a bit of boilerplate code
 for simple tasks. The goal of *this* library is to provide a simple interface for common
 tasks such as exporting experiments, changing status, etc.
 
 ## Installation
 
 ```
-pip install git+https://***REMOVED***/mml-lims/elabftw-python-api
+pip install git+https://github.com/usnistgov/elabftw-python-api
 ```
 
 or, to install from sources with [poetry](https://python-poetry.org/):
 
 ```
-$ git clone https://***REMOVED***/mml-lims/elabftw-python-api
+$ git clone https://github.com/usnistgov/elabftw-python-api
 $ cd elabftw-python-api
 $ poetry install
 ```
@@ -37,7 +33,7 @@ $ poetry install
 ## Usage
 
 Check the documentation strings or the dedicated documentation page
-([https://***REMOVED******REMOVED***.nist.gov/elabftw-python-api](https://***REMOVED******REMOVED***.nist.gov/elabftw-python-api)), 
+([https://pages.nist.gov/elabftw-python-api](https://pages.nist.gov/elabftw-python-api)), 
 but in general usage works as follows:
 
 ```python
@@ -78,9 +74,10 @@ load_dotenv()
 to make them available to your script via `os.environ.get()` (as used in the example
 above). This repo includes a `.env.example` file that you can rename to `.env` and use
 by replacing your API key. An API key for your ELab user can be generated at
-from the relevant tab in your "User control panel", accessible at:
-[https://***REMOVED***/ucp.php?tab=4](https://***REMOVED***/ucp.php?tab=4)
+from the relevant tab in your "User control panel".
 
-The `***REMOVED***` can be left as is. This value is used by the API library to
-validate HTTPS requests made by the library, since ***REMOVED*** uses the NIST internal
-SSL certificate.
+The `CERT_BUNDLE` variable allows you to use a custom certificate bundle to validate 
+requests to the API. This can be used if your deployment of eLabFTW uses internal or
+self-signed certificates. Otherwise, if the value is not defined, SSL verification
+will be disabled (which is fine for testing, but not recommended for production
+deployment).
