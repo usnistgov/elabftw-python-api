@@ -5,10 +5,13 @@
 
 This repository 
 ([https://github.com/usnistgov/elabftw-python-api/](https://github.com/usnistgov/elabftw-python-api/)) 
-contains a Python library that can be used to communicate with APIv2
-of [ELabFTW](https://elabftw.net) ([Github](https://github.com/elabftw/elabftw#readme)).
+contains a (work in progress) Python library that can be used to communicate with APIv2
+of [eLabFTW](https://elabftw.net) ([Github](https://github.com/elabftw/elabftw#readme)).
 It was written primarily by [Josh Taillon](https://orcid.org/0000-0002-5185-4503) to develop 
-scripts that interface with the NIST instance of ELabFTW.
+scripts that interface with the NIST instance of eLabFTW. In general, it provides mostly
+read-only interfaces to access information about experiments and items within an eLabFTW
+instance (see the "Usage" section below). It is in a pre-release state currently, but
+is functional enough to be useful.
 
 *Note:* there is an official Python API library available from 
 [https://github.com/elabftw/elabapi-python/](https://github.com/elabftw/elabapi-python/),
