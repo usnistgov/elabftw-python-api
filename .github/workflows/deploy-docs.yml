@@ -1,0 +1,56 @@
+---
+name: Auto-deployment of elabftw-python-api documentation
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+
+    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+    permissions:
+      contents: write  # to let mkdocs write the new docs
+      pages: write     # to deploy to Pages
+      id-token: write  # to verify the deployment originates from an appropriate source
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # otherwise, you will failed to push refs to dest repo
+
+      - name: Set up Python.
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.12
+
+      - name: Install Poetry.
+        run: pipx install poetry
+
+      - name: Install dependencies.
+        run: poetry install
+
+      - name: Build documentation.
+        run: |
+          bash build_docs.sh
+          touch docs/_build/.nojekyll
+      
+      - uses: actions/upload-artifact@v4
+        with:
+          name: built-site
+          path: docs/_build
+          include-hidden-files: true
+
+      - name: Deploy to nist-pages branch
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "Github Actions"
+          git switch nist-pages
+          git pull origin nist-pages
+          cp -rT ./docs/_build .  # Copy your artifact to the root (or desired location)
+          git add --all
+          git commit -m "Deploy built documentation"
+          git push origin nist-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
